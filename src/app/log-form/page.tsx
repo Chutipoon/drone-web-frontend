@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useDrone } from '@/context/DroneContext';
+import TornPaper from '@/components/TornPaper';
 import {
   Thermometer,
   Send,
@@ -10,6 +11,8 @@ import {
   AlertCircle,
   Loader2,
   ArrowRight,
+  FileSpreadsheet,
+  Stamp,
 } from 'lucide-react';
 
 interface SubmittedRecord {
@@ -79,7 +82,8 @@ export default function TemperatureLogFormPage() {
       });
       setCelsius('');
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'เกิดข้อผิดพลาดในการส่งข้อมูลไปที่ API Server';
+      const message =
+        err instanceof Error ? err.message : 'เกิดข้อผิดพลาดในการส่งข้อมูลไปที่ API Server';
       setSubmitError(message);
     } finally {
       setSubmitting(false);
@@ -88,154 +92,228 @@ export default function TemperatureLogFormPage() {
 
   return (
     <div className="mx-auto max-w-2xl space-y-8">
-      {/* Page Header */}
-      <div>
-        <div className="inline-flex items-center gap-2 rounded-full bg-sky-500/10 px-3 py-1 text-xs font-medium text-sky-400 ring-1 ring-sky-500/20 mb-2">
-          <span>Page #2</span>
-          <span>•</span>
-          <span>POST /logs</span>
-        </div>
-        <h1 className="text-2xl font-bold tracking-tight text-white sm:text-3xl">
-          Temperature Log Form
-        </h1>
-        <p className="mt-1 text-sm text-slate-400">
-          บันทึกค่าอุณหภูมิ (Celsius) ของโดรนไปยัง API Server โดยใช้ข้อมูล{' '}
-          <code className="text-slate-300">drone_id</code>,{' '}
-          <code className="text-slate-300">drone_name</code> และ{' '}
-          <code className="text-slate-300">country</code> จากค่า Config
-        </p>
-      </div>
-
-      {/* Active Drone Config Badge */}
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
-        <div className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">
-          ข้อมูลโดรนจาก Config (Page #1) ที่จะถูกส่งไปพร้อมกับอุณหภูมิ
-        </div>
-        {configLoading && !config ? (
-          <div className="flex items-center gap-2 text-sm text-slate-400">
-            <Loader2 className="h-4 w-4 animate-spin text-sky-400" />
-            <span>กำลังโหลดข้อมูล Config...</span>
-          </div>
-        ) : config ? (
-          <div className="grid grid-cols-3 gap-3 text-sm">
-            <div className="rounded-xl bg-slate-950/70 p-3 border border-slate-800/80">
-              <div className="text-xs text-slate-400">drone_id</div>
-              <div className="mt-0.5 font-mono font-semibold text-white">{config.drone_id}</div>
-            </div>
-            <div className="rounded-xl bg-slate-950/70 p-3 border border-slate-800/80">
-              <div className="text-xs text-slate-400">drone_name</div>
-              <div className="mt-0.5 font-semibold text-sky-400">{config.drone_name}</div>
-            </div>
-            <div className="rounded-xl bg-slate-950/70 p-3 border border-slate-800/80">
-              <div className="text-xs text-slate-400">country</div>
-              <div className="mt-0.5 font-semibold text-emerald-400">{config.country}</div>
-            </div>
-          </div>
-        ) : (
-          <div className="text-sm text-rose-400">
-            {configError || 'ไม่พบข้อมูล Config ของโดรน'}
-          </div>
-        )}
-      </div>
-
-      {/* Form Card */}
-      <form
-        onSubmit={handleSubmit}
-        className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6 sm:p-8 shadow-xl space-y-6"
+      {/* Page Title Notice Header */}
+      <TornPaper
+        punchHolesTop={true}
+        tornBottom={true}
+        variant={3}
+        rotation="slight-left"
       >
-        <div>
-          <label
-            htmlFor="celsius"
-            className="block text-sm font-semibold text-slate-200"
-          >
-            Temperature in celsius
-          </label>
-          <p className="mt-1 text-xs text-slate-400">
-            ป้อนค่าอุณหภูมิในหน่วยองศาเซลเซียส (°C) ที่ต้องการบันทึก
-          </p>
-          <div className="relative mt-3">
-            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
-              <Thermometer className="h-5 w-5 text-sky-400" />
+        <div className="flex items-center gap-2 mb-2">
+          <span className="rubber-stamp stamp-blue text-[11px] px-2 py-0.5">
+            DOC REF #02
+          </span>
+          <span className="text-xs text-stone-500 font-bold">•</span>
+          <span className="highlighter-yellow text-xs font-bold text-stone-900 uppercase">
+            POST /logs
+          </span>
+        </div>
+        <h1 className="text-2xl font-black tracking-tight text-stone-900 sm:text-3xl uppercase">
+          Temperature Observation Form
+        </h1>
+        <p className="mt-1 text-xs sm:text-sm text-stone-600 font-mono">
+          แบบฟอร์มบันทึกค่าอุณหภูมิ (°C) ของโดรนลงสมุดบันทึกภาคสนาม ส่งผ่าน API Server
+        </p>
+      </TornPaper>
+
+      {/* Main Ruled Form Sheet */}
+      <TornPaper
+        punchHolesTop={true}
+        tornBottom={true}
+        variant={1}
+        withMarginLine={true}
+      >
+        {/* Pre-filled Config Strip */}
+        <div className="border-b-2 border-stone-800 pb-4">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-black uppercase tracking-widest text-stone-700">
+              OPERATING UNIT IDENTIFICATION
+            </span>
+            <span className="rubber-stamp stamp-green text-[10px] px-2 py-0.2">
+              VERIFIED CONFIG
+            </span>
+          </div>
+
+          {configLoading && !config ? (
+            <div className="mt-3 flex items-center gap-2 text-xs text-stone-600 font-mono">
+              <Loader2 className="h-4 w-4 animate-spin text-stone-800" />
+              <span>กำลังโหลดข้อมูลประจำหน่วยโดรน...</span>
             </div>
-            <input
-              id="celsius"
-              name="celsius"
-              type="number"
-              step="any"
-              required
-              value={celsius}
-              onChange={(e) => setCelsius(e.target.value)}
-              placeholder="เช่น 45"
-              className="block w-full rounded-xl border border-slate-700 bg-slate-950 py-3.5 pl-12 pr-14 text-base text-white placeholder-slate-500 transition focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/30"
-            />
-            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-4 text-sm font-semibold text-slate-400">
-              °C
+          ) : config ? (
+            <div className="mt-4 grid grid-cols-3 gap-3 text-xs font-mono">
+              <div className="border border-dashed border-stone-400 bg-stone-100/60 p-2.5 rounded-sm">
+                <span className="text-[10px] text-stone-500 uppercase font-bold block">
+                  DRONE_ID
+                </span>
+                <span className="text-base font-black text-stone-900">
+                  #{config.drone_id}
+                </span>
+              </div>
+              <div className="border border-dashed border-stone-400 bg-stone-100/60 p-2.5 rounded-sm">
+                <span className="text-[10px] text-stone-500 uppercase font-bold block">
+                  DRONE_NAME
+                </span>
+                <span className="text-sm font-black text-stone-900 truncate block">
+                  {config.drone_name}
+                </span>
+              </div>
+              <div className="border border-dashed border-stone-400 bg-stone-100/60 p-2.5 rounded-sm">
+                <span className="text-[10px] text-stone-500 uppercase font-bold block">
+                  COUNTRY
+                </span>
+                <span className="text-sm font-black text-stone-900 truncate block">
+                  {config.country}
+                </span>
+              </div>
+            </div>
+          ) : (
+            <div className="mt-3 text-xs text-red-800 font-bold">
+              {configError || 'ไม่พบข้อมูล Config ของโดรน กรุณาเปิด Page #1'}
+            </div>
+          )}
+        </div>
+
+        {/* Input Form with Ruled Fill-in-the-blank line */}
+        <form onSubmit={handleSubmit} className="mt-6 space-y-8">
+          <div>
+            <div className="flex items-center justify-between">
+              <label
+                htmlFor="celsius"
+                className="block text-sm font-black uppercase tracking-wide text-stone-900"
+              >
+                1. TEMPERATURE READING (°C)
+              </label>
+              <span className="text-[10px] text-stone-500 font-mono">
+                [REQUIRED FIELD]
+              </span>
+            </div>
+            <p className="mt-1 text-xs text-stone-600 font-mono">
+              ป้อนค่าอุณหภูมิในหน่วยองศาเซลเซียสที่วัดได้จากเซนเซอร์ภาคสนาม
+            </p>
+
+            {/* Hand-written / Typewriter Underlined Input */}
+            <div className="relative mt-4 flex items-center border-b-2 border-stone-800 pb-1">
+              <div className="text-stone-700 mr-3">
+                <Thermometer className="h-6 w-6 text-stone-800" />
+              </div>
+              <input
+                id="celsius"
+                name="celsius"
+                type="number"
+                step="any"
+                required
+                value={celsius}
+                onChange={(e) => setCelsius(e.target.value)}
+                placeholder="เช่น 28.5"
+                className="w-full bg-transparent font-mono text-2xl font-black text-stone-950 placeholder-stone-400 focus:outline-none"
+              />
+              <span className="text-lg font-black text-stone-800 ml-2 font-mono">
+                °C
+              </span>
             </div>
           </div>
-        </div>
 
-        <button
-          type="submit"
-          disabled={submitting || !config}
-          className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-sky-500 to-indigo-600 px-6 py-3.5 text-base font-semibold text-white shadow-lg shadow-sky-500/25 transition hover:from-sky-400 hover:to-indigo-500 disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          {submitting ? (
-            <>
-              <Loader2 className="h-5 w-5 animate-spin" />
-              <span>Submitting...</span>
-            </>
-          ) : (
-            <>
-              <Send className="h-4 w-4" />
-              <span>Submit data</span>
-            </>
-          )}
-        </button>
-      </form>
+          {/* Rubber Stamp Submit Button */}
+          <div className="pt-2">
+            <button
+              type="submit"
+              disabled={submitting || !config}
+              className="rubber-stamp stamp-blue w-full py-3.5 text-sm sm:text-base font-black tracking-widest cursor-pointer shadow-[3px_3px_0px_rgba(0,0,0,0.85)] hover:-translate-y-0.5 active:translate-y-0.5 transition-transform disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {submitting ? (
+                <span className="inline-flex items-center gap-2">
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                  <span>TRANSMITTING TELEMETRY...</span>
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-2">
+                  <Send className="h-5 w-5" />
+                  <span>[ ✦ TRANSMIT & STAMP LOG ENTRY ✦ ]</span>
+                </span>
+              )}
+            </button>
+          </div>
+        </form>
+      </TornPaper>
 
-      {/* Error Message */}
+      {/* Error Stamped Slip */}
       {submitError && (
-        <div className="flex items-start gap-3 rounded-2xl border border-rose-500/30 bg-rose-500/10 p-4 text-rose-200">
-          <AlertCircle className="h-5 w-5 shrink-0 text-rose-400 mt-0.5" />
-          <div className="text-sm">{submitError}</div>
-        </div>
+        <TornPaper
+          variant={2}
+          tornBottom={true}
+          rotation="right"
+          className="border-l-4 border-l-red-700"
+        >
+          <div className="flex items-start gap-3">
+            <AlertCircle className="h-6 w-6 shrink-0 text-red-700 mt-0.5" />
+            <div>
+              <p className="font-black text-red-800 uppercase tracking-wide text-xs sm:text-sm">
+                [!] LOGGING REJECTED / ส่งข้อมูลไม่สำเร็จ
+              </p>
+              <p className="text-xs text-red-900 font-mono mt-1">{submitError}</p>
+            </div>
+          </div>
+        </TornPaper>
       )}
 
-      {/* Success Message */}
+      {/* Success Stamped Slip */}
       {submittedRecord && (
-        <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-6 text-emerald-100 space-y-4">
-          <div className="flex items-center gap-2.5 text-emerald-300 font-semibold">
-            <CheckCircle2 className="h-5 w-5 text-emerald-400" />
-            <span>บันทึกข้อมูล Log อุณหภูมิสำเร็จ!</span>
+        <TornPaper
+          variant={1}
+          punchHolesTop={true}
+          tornBottom={true}
+          rotation="slight-right"
+          className="border-l-4 border-l-emerald-700"
+        >
+          <div className="flex items-center justify-between border-b border-stone-300 pb-3">
+            <div className="flex items-center gap-2 text-emerald-900">
+              <CheckCircle2 className="h-6 w-6 text-emerald-700" />
+              <span className="font-black uppercase tracking-wide text-sm sm:text-base">
+                TELEMETRY LOG VERIFIED & STAMPED!
+              </span>
+            </div>
+            <span className="rubber-stamp stamp-green text-[10px] px-2 py-0.5">
+              ACCEPTED
+            </span>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-            <div className="rounded-xl bg-slate-950/60 p-3 border border-emerald-500/20">
-              <span className="text-slate-400">Drone ID</span>
-              <div className="mt-1 font-mono font-bold text-white">{submittedRecord.drone_id}</div>
+
+          <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs font-mono">
+            <div className="border border-stone-300 bg-stone-100/80 p-2.5 rounded">
+              <span className="text-[10px] text-stone-500 font-bold block">DRONE ID</span>
+              <span className="text-sm font-black text-stone-900">
+                #{submittedRecord.drone_id}
+              </span>
             </div>
-            <div className="rounded-xl bg-slate-950/60 p-3 border border-emerald-500/20">
-              <span className="text-slate-400">Drone Name</span>
-              <div className="mt-1 font-bold text-white">{submittedRecord.drone_name}</div>
+            <div className="border border-stone-300 bg-stone-100/80 p-2.5 rounded">
+              <span className="text-[10px] text-stone-500 font-bold block">NAME</span>
+              <span className="text-sm font-black text-stone-900 truncate block">
+                {submittedRecord.drone_name}
+              </span>
             </div>
-            <div className="rounded-xl bg-slate-950/60 p-3 border border-emerald-500/20">
-              <span className="text-slate-400">Country</span>
-              <div className="mt-1 font-bold text-white">{submittedRecord.country}</div>
+            <div className="border border-stone-300 bg-stone-100/80 p-2.5 rounded">
+              <span className="text-[10px] text-stone-500 font-bold block">COUNTRY</span>
+              <span className="text-sm font-black text-stone-900 truncate block">
+                {submittedRecord.country}
+              </span>
             </div>
-            <div className="rounded-xl bg-slate-950/60 p-3 border border-emerald-500/20">
-              <span className="text-slate-400">Celsius</span>
-              <div className="mt-1 font-bold text-sky-400">{submittedRecord.celsius} °C</div>
+            <div className="border border-stone-300 bg-stone-100/80 p-2.5 rounded">
+              <span className="text-[10px] text-stone-500 font-bold block">RECORDED CELSIUS</span>
+              <span className="text-sm font-black text-stone-950 block highlighter-yellow">
+                {submittedRecord.celsius} °C
+              </span>
             </div>
           </div>
-          <div>
+
+          <div className="mt-6 border-t border-stone-300 pt-4">
             <Link
               href="/logs"
-              className="inline-flex items-center gap-2 rounded-xl bg-emerald-500 px-4 py-2 text-xs font-semibold text-slate-950 transition hover:bg-emerald-400"
+              className="rubber-stamp stamp-green text-xs font-black px-4 py-2.5 hover:bg-green-100/80 transition-colors inline-flex items-center gap-2"
             >
-              <span>ดูรายการที่เพิ่งบันทึกใน Page #3: View Logs</span>
+              <span>[ ➔ VIEW RECORD IN PAGE #3: FIELD LOGS ]</span>
               <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
-        </div>
+        </TornPaper>
       )}
     </div>
   );
